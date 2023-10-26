@@ -5,7 +5,6 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public bool IsHoster;
-    public bool IsClient;
 
     [SerializeField]
     public Server server;
@@ -13,9 +12,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     public Client client;
 
-    void Awake()
+    static GameManager instance = null;
+    public static GameManager Instance
     {
-        DontDestroyOnLoad(this.gameObject);
+        get
+        {
+            if (instance == null)
+                instance = FindObjectOfType<GameManager>();
+            return instance;
+        }
     }
 
     private void Update()
@@ -24,13 +29,13 @@ public class GameManager : MonoBehaviour
         {
             server.enabled = true;
             DontDestroyOnLoad(server);
-            IsHoster = false;
+            IsHoster = true;
         }
-        else if (IsClient)
+        else 
         {
             client.enabled = true;
             DontDestroyOnLoad(client);
-            IsClient = false;
+            IsHoster = false;
         }
     }
 

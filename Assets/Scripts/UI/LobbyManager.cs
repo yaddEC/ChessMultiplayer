@@ -88,7 +88,6 @@ public class LobbyManager : MonoBehaviour
 
         SceneManager.LoadScene(sceneName);
         gameManager.IsHoster = true;
-        gameManager.IsClient = false;
     }
 
     public void SwitchSceneClient(string sceneName)
@@ -99,7 +98,6 @@ public class LobbyManager : MonoBehaviour
 
         SceneManager.LoadScene(sceneName);
         gameManager.IsHoster = false;
-        gameManager.IsClient = true;
     }
 
     public void ServerScreen()

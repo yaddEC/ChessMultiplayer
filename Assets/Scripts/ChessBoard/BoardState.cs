@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 /*
  * The BoardState class stores the internal data values of the board
@@ -48,6 +49,7 @@ public partial class ChessGameManager
         }
     }
 
+    [Serializable]
     public class BoardState
     {
         public enum EMoveResult

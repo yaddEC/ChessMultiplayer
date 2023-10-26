@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine.UIElements;
 using System.IO;
+using System;
+using static ChessGameManager;
 
 /*
  * This singleton manages the whole chess game
@@ -48,6 +50,7 @@ public partial class ChessGameManager : MonoBehaviour
         None
     }
 
+    [Serializable]
     public enum EChessTeam
     {
         White = 0,
@@ -84,6 +87,7 @@ public partial class ChessGameManager : MonoBehaviour
         }
     }
 
+    [Serializable]
     public struct Move
     {
         public int from;
@@ -124,11 +128,14 @@ public partial class ChessGameManager : MonoBehaviour
     BoardState boardState = null;
     public BoardState GetBoardState() { return boardState; }
 
+    public EChessTeam playerTeam;
+
     EChessTeam teamTurn;
 
     List<uint> scores;
 
     public delegate void PlayerTurnEvent(bool isWhiteMove);
+
     public event PlayerTurnEvent OnPlayerTurn = null;
 
     public delegate void ScoreUpdateEvent(uint whiteScore, uint blackScore);
@@ -141,7 +148,14 @@ public partial class ChessGameManager : MonoBehaviour
         // Start game
         boardState.Reset();
 
+
         teamTurn = EChessTeam.White;
+        if (GameManager.Instance.IsHoster)
+            playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 2);
+        else
+            GameManager.Instance.client.SetTeam();
+
+
         if (scores == null)
         {
             scores = new List<uint>();
@@ -156,6 +170,22 @@ public partial class ChessGameManager : MonoBehaviour
         }
     }
 
+    public void ReceiveGameInfo()
+    {
+        if (GameManager.Instance.IsHoster)
+            StartCoroutine(GameManager.Instance.server.ReceivedMove());
+        else
+            StartCoroutine(GameManager.Instance.client.ReceivedMove());
+    }
+
+    public void SendGameInfo(Move move)
+    {
+        if (GameManager.Instance.IsHoster)
+            GameManager.Instance.server.SendMove(move);
+        else
+            GameManager.Instance.client.SendMove(move);
+    }
+
     public void PlayTurn(Move move)
     {
         if (boardState.IsValidMove(teamTurn, move))
@@ -166,8 +196,8 @@ public partial class ChessGameManager : MonoBehaviour
                 // instantiate promoted queen gameobject
                 AddQueenAtPos(move.to);
             }
+                EChessTeam otherTeam = (teamTurn == EChessTeam.White) ? EChessTeam.Black : EChessTeam.White;
 
-            EChessTeam otherTeam = (teamTurn == EChessTeam.White) ? EChessTeam.Black : EChessTeam.White;
             if (boardState.DoesTeamLose(otherTeam))
             {
                 // increase score and reset board
@@ -182,11 +212,16 @@ public partial class ChessGameManager : MonoBehaviour
             }
             else
             {
+
                 teamTurn = otherTeam;
+
             }
             // raise event
             if (OnPlayerTurn != null)
-                OnPlayerTurn(teamTurn == EChessTeam.White);
+                OnPlayerTurn(IsPlayerTurn());
+            
+            if(!IsPlayerTurn())
+                SendGameInfo(move);
         }
     }
 
@@ -202,7 +237,7 @@ public partial class ChessGameManager : MonoBehaviour
 
     public bool IsPlayerTurn()
     {
-        return teamTurn == EChessTeam.White;
+        return teamTurn == playerTeam;
     }
 
     public BoardSquare GetSquare(int pos)
@@ -248,6 +283,11 @@ public partial class ChessGameManager : MonoBehaviour
 
     void Start()
     {
+        if (GameManager.Instance.IsHoster)
+            GameManager.Instance.server.LaunchServer();
+        else
+            GameManager.Instance.client.LaunchClient();
+
         pieceLayerMask = 1 << LayerMask.NameToLayer("Piece");
         boardLayerMask = 1 << LayerMask.NameToLayer("Board");
 
@@ -265,21 +305,23 @@ public partial class ChessGameManager : MonoBehaviour
         CreatePieces();
 
         if (OnPlayerTurn != null)
-            OnPlayerTurn(teamTurn == EChessTeam.White);
+            OnPlayerTurn(IsPlayerTurn());
         if (OnScoreUpdated != null)
             OnScoreUpdated(scores[0], scores[1]);
     }
 
     void Update()
     {
-        // human player always plays white
-        if (teamTurn == EChessTeam.White)
+
+        if (IsPlayerTurn())
             UpdatePlayerTurn();
-        // AI plays black
+
         else if (isAIEnabled)
             UpdateAITurn();
-        else
-            UpdatePlayerTurn();
+        else 
+            ReceiveGameInfo();
+  
+
     }
     #endregion
 
