@@ -7,13 +7,18 @@ using UnityEngine;
 
 public class Client : MonoBehaviour
 {
-    BinaryFormatter bFormatter = new BinaryFormatter();
+    [SerializeField]
+    LobbyManager lobbyManager;
+    BinaryFormatter bFormatter = new BinaryFormatter();         
     IPAddress serverAddress;
-    string ipServer = "10.2.103.121";
-    int serverPort = 8000;
+    string ipServer;
+    int serverPort;
 
     private void Start()
     {
+        ipServer = lobbyManager.clientAdressIP;
+        serverPort = lobbyManager.clientAdressPort;
+        Debug.Log(ipServer);
         serverAddress = IPAddress.Parse(ipServer);
         Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -27,7 +32,7 @@ public class Client : MonoBehaviour
         bFormatter.Serialize(stream, serverMSG);
         clientSocket.Send(buffer, buffer.Length, 0);
 
-        byte[] buffer2 = new byte[1000];
+        byte[] buffer2 = new byte[1000];    
         int serverBytes = clientSocket.Receive(buffer2);
         MemoryStream ms = new MemoryStream(buffer2);
         BinaryFormatter formatter = new BinaryFormatter();

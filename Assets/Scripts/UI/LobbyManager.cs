@@ -5,6 +5,9 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 using UnityEngine.Analytics;
+using System.Net;
+using System.Linq;
+using UnityEngine.SocialPlatforms;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -15,15 +18,32 @@ public class LobbyManager : MonoBehaviour
     GameObject MainMenu;
     [SerializeField]
     GameObject ClientMenu;
+    [SerializeField]
+    GameObject ServerMenu;
 
-    public TMP_InputField inputFieldIP;
-    public TMP_InputField inputFieldPORT;
-    public Button sendButton;
+    public TMP_InputField inputFieldClientIP;
+    public TMP_InputField inputFieldClientPORT;
+    public TMP_InputField inputFieldServerIP;
+    public TMP_InputField inputFieldServerPORT;
+    public TMP_Text showIP;
+
+    public string clientAdressIP;
+    public int clientAdressPort;
+    public int serverAdressPort;
 
     void Start()
     {
-        inputFieldIP.onValueChanged.AddListener(OnInputValueChangedForIP);
-        inputFieldPORT.onValueChanged.AddListener(OnInputValueChangedForPORT);
+        inputFieldClientIP.onValueChanged.AddListener(OnInputValueChangedForIP);
+        inputFieldClientPORT.onValueChanged.AddListener(OnInputValueChangedForPORT);
+        GetLocalIPv4();
+        inputFieldServerIP.interactable = false;
+    }
+
+    public void GetLocalIPv4()
+    {
+        string LocalIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
+
+        showIP.text = LocalIP;
     }
 
     void OnInputValueChangedForIP(string newText)
@@ -38,8 +58,7 @@ public class LobbyManager : MonoBehaviour
             }
         }
 
-        // Mise à jour du texte filtré dans le champ de texte TMP.
-        inputFieldIP.text = filteredText;
+        inputFieldClientIP.text = filteredText;
     }
 
     void OnInputValueChangedForPORT(string newText)
@@ -54,8 +73,7 @@ public class LobbyManager : MonoBehaviour
             }
         }
 
-        // Mise à jour du texte filtré dans le champ de texte TMP.
-        inputFieldPORT.text = filteredText;
+        inputFieldClientPORT.text = filteredText;
     }
 
     public void SwitchScene(string sceneName)
@@ -65,6 +83,9 @@ public class LobbyManager : MonoBehaviour
 
     public void SwitchSceneHoster(string sceneName)
     {
+        string serverPort = inputFieldServerPORT.text;
+        int.TryParse(serverPort, out serverAdressPort);
+
         SceneManager.LoadScene(sceneName);
         gameManager.IsHoster = true;
         gameManager.IsClient = false;
@@ -72,18 +93,20 @@ public class LobbyManager : MonoBehaviour
 
     public void SwitchSceneClient(string sceneName)
     {
-        string adressIP = inputFieldIP.text;
-        string port = inputFieldPORT.text;
-        int result;
-        int.TryParse(port, out result);
+        clientAdressIP = inputFieldClientIP.text;
+        string clientPort = inputFieldClientPORT.text;
+        int.TryParse(clientPort, out clientAdressPort);
 
-        if (gameManager.server.serverHost == adressIP && gameManager.server.serverPort == result)
-        {
-            SceneManager.LoadScene(sceneName);
-            gameManager.IsHoster = false;
-            gameManager.IsClient = true;
-        }
-        
+        SceneManager.LoadScene(sceneName);
+        gameManager.IsHoster = false;
+        gameManager.IsClient = true;
+    }
+
+    public void ServerScreen()
+    {
+        MainMenu.SetActive(false);
+        ServerMenu.SetActive(true);
+        EventSystem.current.SetSelectedGameObject(null);
     }
 
     public void ClientScreen()
@@ -97,6 +120,7 @@ public class LobbyManager : MonoBehaviour
     {
         MainMenu.SetActive(true);
         ClientMenu.SetActive(false);
+        ServerMenu.SetActive(false);
         EventSystem.current.SetSelectedGameObject(null);
     }
 

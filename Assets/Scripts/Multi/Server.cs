@@ -5,19 +5,26 @@ using System;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Linq;
+using System.Collections.Generic;
+using static ChessGameManager;
+using UnityEngine.UIElements;
 
 public class Server : MonoBehaviour
 {
+    [SerializeField]
+    LobbyManager lobbyManager;
     BinaryFormatter bFormatter = new BinaryFormatter();
     IPAddress serverAddress;
     Socket serverSocket;
     Socket clientSocket;
-    public string serverHost = "10.2.103.121";
-    public int serverPort = 8000;
+    public int serverPort;
 
     private void Start()
     {
-        serverAddress = IPAddress.Parse(serverHost);
+        string LocalIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
+        serverPort = lobbyManager.serverAdressPort;
+        serverAddress = IPAddress.Parse(LocalIP);
         serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         serverSocket.Bind(new IPEndPoint(serverAddress, serverPort));
         serverSocket.Listen(5);
@@ -49,7 +56,6 @@ public class Server : MonoBehaviour
             Stream stream = new MemoryStream(buffer);
             bFormatter.Serialize(stream, serverMSG);
             clientSocket.Send(buffer, buffer.Length, 0);
-            Debug.Log("send fish!");
         }
         catch (Exception e)
         {
