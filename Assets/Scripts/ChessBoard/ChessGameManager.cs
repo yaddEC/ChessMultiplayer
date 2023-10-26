@@ -209,19 +209,20 @@ public partial class ChessGameManager : MonoBehaviour
                 // remove extra piece instances if pawn promotions occured
                 teamPiecesArray[0].ClearPromotedPieces();
                 teamPiecesArray[1].ClearPromotedPieces();
+               // SendGameInfo(move);
             }
             else
             {
-
                 teamTurn = otherTeam;
+  
 
             }
             // raise event
             if (OnPlayerTurn != null)
                 OnPlayerTurn(IsPlayerTurn());
-            
-            if(!IsPlayerTurn())
+            if (!IsPlayerTurn())
                 SendGameInfo(move);
+
         }
     }
 
@@ -388,7 +389,7 @@ public partial class ChessGameManager : MonoBehaviour
         }
     }
 
-    void UpdatePieces()
+    public void UpdatePieces()
     {
         teamPiecesArray[0].Hide();
         teamPiecesArray[1].Hide();

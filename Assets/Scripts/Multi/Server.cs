@@ -99,7 +99,7 @@ public class Server : MonoBehaviour
 
     public IEnumerator ReceivedMove()
     {
-        if (isRecieving) yield return new WaitForSeconds(0.1f);
+        if (isRecieving) yield return null;
         else
         {
             isRecieving = true;
@@ -116,14 +116,15 @@ public class Server : MonoBehaviour
                     ChessGameManager.Move move = (ChessGameManager.Move)bFormatter.Deserialize(ms);
 
                     ChessGameManager.Instance.PlayTurn(move);
-                    moveReceived = true;
+                    ChessGameManager.Instance.UpdatePieces();
+                        moveReceived = true;
                 }
             }
             catch (Exception e)
             {
                 Debug.Log(e);
             }
-            yield return new WaitForSeconds(0.1f);
+            yield return null;
          }
         }
     }

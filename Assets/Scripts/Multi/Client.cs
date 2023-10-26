@@ -35,14 +35,6 @@ public class Client : MonoBehaviour
 
         clientSocket.Connect(new IPEndPoint(serverAddress, serverPort));
         Debug.Log("Connected to server!");
-
-        /* Message serverMSG = new();
-        serverMSG.Content = "AAAAAAAAAAAH YAAAAAAAAAANNNNNNN";
-        byte[] buffer = new byte[1000];
-        Stream stream = new MemoryStream(buffer);
-        bFormatter.Serialize(stream, serverMSG);
-        clientSocket.Send(buffer, buffer.Length, 0);*/
-
     }
 
     public void SetTeam()
@@ -66,7 +58,6 @@ public class Client : MonoBehaviour
             Stream stream = new MemoryStream(buffer);
             bFormatter.Serialize(stream, move);
             clientSocket.Send(buffer, buffer.Length, 0);
-            StartCoroutine(ReceivedMove());
         }
         catch (Exception e)
         {
@@ -76,7 +67,7 @@ public class Client : MonoBehaviour
 
     public IEnumerator ReceivedMove()
     {
-        if (isRecieving) yield return new WaitForSeconds(0.1f);
+        if (isRecieving) yield return null;
         else
         {
 
@@ -95,6 +86,7 @@ public class Client : MonoBehaviour
 
 
                         ChessGameManager.Instance.PlayTurn(move);
+                        ChessGameManager.Instance.UpdatePieces();
                         moveReceived = true;
                     }
                 }
@@ -106,7 +98,7 @@ public class Client : MonoBehaviour
                 {
                     Debug.Log(e);
                 }
-                yield return new WaitForSeconds(0.1f);
+                yield return null;
             }
         }
     }
