@@ -29,8 +29,8 @@ public class GUIManager : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
-        whiteToMoveTr = transform.Find("WhiteTurnText");
-        blackToMoveTr = transform.Find("BlackTurnText");
+        whiteToMoveTr = transform.Find("PlayerTurnText");
+        blackToMoveTr = transform.Find("OpponentTurnText");
 
         whiteToMoveTr.gameObject.SetActive(false);
         blackToMoveTr.gameObject.SetActive(false);

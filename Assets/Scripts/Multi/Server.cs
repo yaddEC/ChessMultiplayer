@@ -135,12 +135,8 @@ public class Server : MonoBehaviour
 
     public IEnumerator ReceivedMove()
     {
-        if (isRecieving) yield return null;
-        else
-        {
-            isRecieving = true;
-            while (!moveReceived)
-         {
+       
+
             try
             {
                 byte[] buffer = new byte[1000];
@@ -153,16 +149,17 @@ public class Server : MonoBehaviour
 
                     ChessGameManager.Instance.PlayTurn(move);
                     ChessGameManager.Instance.UpdatePieces();
-                        moveReceived = true;
+
+
+                    }
                 }
-            }
             catch (Exception e)
             {
-                Debug.Log(e);
+                    Debug.Log(e);
             }
-            yield return null;
-         }
-        }
+            yield return new WaitForSeconds(0.1f);
+            
+        
     }
     public void StopServer()
     {
