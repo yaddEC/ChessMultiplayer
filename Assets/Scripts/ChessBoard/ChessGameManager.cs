@@ -144,16 +144,23 @@ public partial class ChessGameManager : MonoBehaviour
     public void PrepareGame(bool resetScore = true)
     {
         chessAI = ChessAI.Instance;
-
-        // Start game
         boardState.Reset();
+         teamTurn = EChessTeam.White;
+        if (resetScore )
+        {
+           if (isAIEnabled && resetScore)
+           {
+              playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 2);
+           }
+           else
+           {
+                if (GameManager.Instance.IsHoster)
+                    playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 2);
+                else
+                    GameManager.Instance.client.SetTeam();
+           }
 
-
-        teamTurn = EChessTeam.White;
-        if (GameManager.Instance.IsHoster)
-            playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 2);
-        else
-            GameManager.Instance.client.SetTeam();
+        }
 
 
         if (scores == null)
@@ -204,24 +211,29 @@ public partial class ChessGameManager : MonoBehaviour
                 scores[(int)teamTurn]++;
                 if (OnScoreUpdated != null)
                     OnScoreUpdated(scores[0], scores[1]);
-
+                    SendGameInfo(move);
                 PrepareGame(false);
+                
+
                 // remove extra piece instances if pawn promotions occured
                 teamPiecesArray[0].ClearPromotedPieces();
                 teamPiecesArray[1].ClearPromotedPieces();
-               // SendGameInfo(move);
+
+
+
             }
             else
             {
                 teamTurn = otherTeam;
-  
+                if (!IsPlayerTurn())
+                    SendGameInfo(move);
 
             }
             // raise event
             if (OnPlayerTurn != null)
                 OnPlayerTurn(IsPlayerTurn());
-            if (!IsPlayerTurn())
-                SendGameInfo(move);
+
+
 
         }
     }
@@ -284,10 +296,8 @@ public partial class ChessGameManager : MonoBehaviour
 
     void Start()
     {
-        if (GameManager.Instance.IsHoster)
-            GameManager.Instance.server.LaunchServer();
-        else
-            GameManager.Instance.client.LaunchClient();
+        if (!isAIEnabled)
+            LaunchMatchMaking();
 
         pieceLayerMask = 1 << LayerMask.NameToLayer("Piece");
         boardLayerMask = 1 << LayerMask.NameToLayer("Board");
@@ -309,6 +319,13 @@ public partial class ChessGameManager : MonoBehaviour
             OnPlayerTurn(IsPlayerTurn());
         if (OnScoreUpdated != null)
             OnScoreUpdated(scores[0], scores[1]);
+
+
+        if (playerTeam == EChessTeam.Black)
+        {
+            Camera.main.transform.position = new Vector3(0, 32.2f, 12);
+            Camera.main.transform.Rotate(0, 180, 0);
+        }
     }
 
     void Update()
@@ -422,6 +439,14 @@ public partial class ChessGameManager : MonoBehaviour
         PlayTurn(move);
 
         UpdatePieces();
+    }
+
+    void LaunchMatchMaking()
+    {
+        if (GameManager.Instance.IsHoster)
+            GameManager.Instance.server.LaunchServer();
+        else
+            GameManager.Instance.client.LaunchClient();
     }
 
     void UpdatePlayerTurn()
