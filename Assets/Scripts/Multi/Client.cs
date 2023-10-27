@@ -18,6 +18,7 @@ public class Client : MonoBehaviour
     Socket clientSocket;
     string ipServer;
     int serverPort;
+    public event Action OnServerDisconnected;
 
     private void Start()
     {
@@ -25,8 +26,35 @@ public class Client : MonoBehaviour
 
     }
 
+    private IEnumerator MonitorServerConnection()
+    {
+        while (clientSocket != null && clientSocket.Connected)
+        {
+            yield return new WaitForSeconds(1.0f); 
+
+            if (!IsServerConnected(clientSocket))
+            {
+                HandleServerDisconnect();
+                break;
+            }
+        }
+    }
+
+    private bool IsServerConnected(Socket socket)
+    {
+        try
+        {
+            return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+        }
+        catch (Exception e) 
+        { 
+            return false; 
+        }
+    }
+
     public void LaunchClient()
     {
+
         ipServer = lobbyManager.clientAdressIP;
         serverPort = lobbyManager.clientAdressPort;
         Debug.Log(ipServer);
@@ -35,6 +63,15 @@ public class Client : MonoBehaviour
 
         clientSocket.Connect(new IPEndPoint(serverAddress, serverPort));
         Debug.Log("Connected to server!");
+
+        StartCoroutine(MonitorServerConnection());
+    }
+    private void HandleServerDisconnect()
+    {
+        if (OnServerDisconnected != null)
+        {
+            OnServerDisconnected();
+        }
     }
 
     public void SetTeam()
@@ -103,6 +140,25 @@ public class Client : MonoBehaviour
         }
     }
 
+    public void StopClient()
+    {
+        if (clientSocket != null && clientSocket.Connected)
+        {
+            clientSocket.Shutdown(SocketShutdown.Both);
+            clientSocket.Close();
+            clientSocket = null;
+            Debug.Log("Client stopped.");
+        }
+    }
 
+    public void Disconnect()
+    {
+        StopClient();
+    }
+
+    private void OnDestroy()
+    {
+        Disconnect();
+    }
 
 }

@@ -24,6 +24,7 @@ public class Server : MonoBehaviour
     IPAddress serverAddress;
     Socket serverSocket;
     Socket clientSocket;
+    public event Action OnClientDisconnected;
     public int serverPort;
 
     private void Start()
@@ -45,6 +46,31 @@ public class Server : MonoBehaviour
         StartCoroutine(FetchNewClient());
     }
 
+    private IEnumerator MonitorClientConnection()
+    {
+        while (clientSocket != null && clientSocket.Connected)
+        {
+            yield return new WaitForSeconds(1.0f); 
+
+            if (!IsClientConnected(clientSocket))
+            {
+                HandleClientDisconnect();
+                break;
+            }
+        }
+    }
+
+    private bool IsClientConnected(Socket socket)
+    {
+        try
+        {
+            return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+        }
+        catch (Exception e) 
+        { 
+            return false;   
+        }
+    }
 
 
     IEnumerator FetchNewClient() 
@@ -57,6 +83,8 @@ public class Server : MonoBehaviour
             clientSocket.Blocking = false;
             Debug.Log("Client connected!");
             foundClient = true;
+
+            StartCoroutine(MonitorClientConnection());
 
         }
         catch (SocketException e)
@@ -77,6 +105,14 @@ public class Server : MonoBehaviour
             Debug.Log(e);
         }
         yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private void HandleClientDisconnect()
+    {
+        if (OnClientDisconnected != null)
+        {
+            OnClientDisconnected();
         }
     }
 
@@ -127,5 +163,31 @@ public class Server : MonoBehaviour
             yield return null;
          }
         }
+    }
+    public void StopServer()
+    {
+        if (isLaunched)
+        {
+            isLaunched = false;
+
+            if (clientSocket != null)
+            {
+                clientSocket.Close();
+                clientSocket = null;
+            }
+
+            if (serverSocket != null)
+            {
+                serverSocket.Close();
+                serverSocket = null;
+            }
+
+            Debug.Log("Server stopped.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        StopServer();
     }
 }

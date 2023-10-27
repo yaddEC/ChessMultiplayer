@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -21,6 +22,23 @@ public class GameManager : MonoBehaviour
                 instance = FindObjectOfType<GameManager>();
             return instance;
         }
+    }
+    private void Start()
+    {
+        server.OnClientDisconnected += OnClientDisconnected;
+        client.OnServerDisconnected += OnServerDisconnected;
+    }
+
+    private void OnClientDisconnected()
+    {
+        SceneManager.LoadScene("Disconnected");
+        Destroy(this.gameObject);
+    }
+
+    private void OnServerDisconnected()
+    {
+        SceneManager.LoadScene("Disconnected");
+        Destroy(this.gameObject);
     }
 
     private void Update()

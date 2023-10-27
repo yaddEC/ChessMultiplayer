@@ -1,13 +1,9 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
-using UnityEngine.Analytics;
 using System.Net;
 using System.Linq;
-using UnityEngine.SocialPlatforms;
 
 public class LobbyManager : MonoBehaviour
 {
