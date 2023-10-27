@@ -33,3 +33,5 @@ Ce jeu utilise plusieurs techniques pour gérer les fonctionnalités de réseau:
 - **Binary Formatter**: Utilisé pour la sérialisation et la désérialisation de données et de classe(des mouvement d'échec dans notre cas), permettant ainsi leur transfert via le réseau.
 - **Gestion des Connexions**: Implémentation de méthodes pour vérifier si un client est toujours connecté, et gérer les déconnexions inattendues.
 
+## Bugs
+- Connecter le Serveur avant de connecter le client sinon vous ne pouvez pas jouer
