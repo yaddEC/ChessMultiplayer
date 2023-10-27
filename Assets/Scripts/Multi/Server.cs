@@ -37,7 +37,7 @@ public class Server : MonoBehaviour
         serverSocket.Listen(5);
         serverSocket.Blocking = false;
         isLaunched = true;
-        StartCoroutine(FetchNewClient());
+        FetchNewClient();
     }
 
     private IEnumerator MonitorClientConnection()
@@ -66,8 +66,7 @@ public class Server : MonoBehaviour
         }
     }
 
-
-    IEnumerator FetchNewClient() 
+    void FetchNewClient() 
     {
         while(!foundClient)
         { 
@@ -90,8 +89,6 @@ public class Server : MonoBehaviour
                 clientSocket.Send(buffer, buffer.Length, 0);
             }
             catch (Exception) {}
-
-            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -129,8 +126,6 @@ public class Server : MonoBehaviour
 
                 ChessGameManager.Instance.PlayTurn(move);
                 ChessGameManager.Instance.UpdatePieces();
-
-
             }
         }
         catch (Exception) {}
@@ -146,14 +141,12 @@ public class Server : MonoBehaviour
 
             if (clientSocket != null)
             {
-                clientSocket.Shutdown(SocketShutdown.Both);
                 clientSocket.Close();
                 clientSocket = null;
             }
 
             if (serverSocket != null)
             {
-                serverSocket.Shutdown(SocketShutdown.Both);
                 serverSocket.Close();
                 serverSocket = null;
             }

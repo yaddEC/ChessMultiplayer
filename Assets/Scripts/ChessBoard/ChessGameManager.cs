@@ -134,17 +134,17 @@ public partial class ChessGameManager : MonoBehaviour
     {
         chessAI = ChessAI.Instance;
         boardState.Reset();
-         teamTurn = EChessTeam.White;
-        if (resetScore )
+        teamTurn = EChessTeam.White;
+        if (resetScore)
         {
-           if (isAIEnabled && resetScore)
+           if (isAIEnabled)
            {
               playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 2);
            }
            else
            {
                 if (GameManager.Instance.IsHoster)
-                    playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 2);
+                    playerTeam = (EChessTeam)UnityEngine.Random.Range(0, 1);
                 else
                     GameManager.Instance.client.SetTeam();
            }

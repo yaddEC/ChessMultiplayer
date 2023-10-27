@@ -23,6 +23,8 @@ public class LobbyManager : MonoBehaviour
     public TMP_InputField inputFieldServerPORT;
     public TMP_Text showIP;
 
+
+    public string LocalIP;
     public string clientAdressIP;
     public int clientAdressPort;
     public int serverAdressPort;
@@ -37,7 +39,7 @@ public class LobbyManager : MonoBehaviour
 
     public void GetLocalIPv4()
     {
-        string LocalIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
+        LocalIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
 
         showIP.text = LocalIP;
     }
@@ -94,6 +96,7 @@ public class LobbyManager : MonoBehaviour
 
         SceneManager.LoadScene(sceneName);
         gameManager.IsHoster = false;
+
     }
 
     public void ServerScreen()

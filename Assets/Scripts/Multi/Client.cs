@@ -4,7 +4,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System;
 using System.IO;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 using System.Collections;
 
 public class Client : MonoBehaviour
@@ -55,6 +54,7 @@ public class Client : MonoBehaviour
         clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         clientSocket.Connect(new IPEndPoint(serverAddress, serverPort));
+        clientSocket.Blocking = false;  
 
         StartCoroutine(MonitorServerConnection());
     }
