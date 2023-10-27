@@ -34,6 +34,4 @@ Ce jeu utilise plusieurs techniques pour gérer les fonctionnalités de réseau:
 - **Gestion des Connexions**: Implémentation de méthodes pour vérifier si un client est toujours connecté, et gérer les déconnexions inattendues.
 
 ## Bugs
-- Si jamais le serveur joue les blancs, vous devez jouer un tour pour connecter le client
-- Connecter le Serveur avant de connecter le client sinon vous ne pouvez pas jouer / CRASH
-- NE PAS FERMER LA FENETRER DE JEU SI VOUS ETES LE CLIENT ET QUE VOUS NE JOUER PAS SINON CRASH
+- Connecter le Serveur avant de connecter le client sinon vous ne pouvez pas jouer
