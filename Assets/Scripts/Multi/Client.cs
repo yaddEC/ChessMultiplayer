@@ -10,21 +10,15 @@ using System.Collections;
 public class Client : MonoBehaviour
 {
     [SerializeField]
-    LobbyManager lobbyManager;
+    LobbyManager    lobbyManager;
     BinaryFormatter bFormatter = new BinaryFormatter();         
-    IPAddress serverAddress;
-    bool moveReceived = false;
-    bool isRecieving = false;
-    Socket clientSocket;
-    string ipServer;
-    int serverPort;
+    IPAddress       serverAddress;
+    Socket          clientSocket;
+
+    private string ipServer;
+    private int serverPort;
+
     public event Action OnServerDisconnected;
-
-    private void Start()
-    {
-
-
-    }
 
     private IEnumerator MonitorServerConnection()
     {
@@ -46,7 +40,7 @@ public class Client : MonoBehaviour
         {
             return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
         }
-        catch (Exception e) 
+        catch (Exception) 
         { 
             return false; 
         }
@@ -57,12 +51,10 @@ public class Client : MonoBehaviour
 
         ipServer = lobbyManager.clientAdressIP;
         serverPort = lobbyManager.clientAdressPort;
-        Debug.Log(ipServer);
         serverAddress = IPAddress.Parse(ipServer);
         clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
         clientSocket.Connect(new IPEndPoint(serverAddress, serverPort));
-        Debug.Log("Connected to server!");
 
         StartCoroutine(MonitorServerConnection());
     }
@@ -76,7 +68,6 @@ public class Client : MonoBehaviour
 
     public void SetTeam()
     {
-        //setting the client team based on the host team
         byte[] buffer2 = new byte[1000];
         int serverBytes = clientSocket.Receive(buffer2);
         MemoryStream ms = new MemoryStream(buffer2);
@@ -89,66 +80,45 @@ public class Client : MonoBehaviour
     {
         try
         {
-            moveReceived = false;
-            isRecieving = false;
             byte[] buffer = new byte[1000];
             Stream stream = new MemoryStream(buffer);
             bFormatter.Serialize(stream, move);
             clientSocket.Send(buffer, buffer.Length, 0);
         }
-        catch (Exception e)
-        {
-
-        }
+        catch (Exception){}
     }
 
     public IEnumerator ReceivedMove()
     {
-    
-                try
-                {
-                    byte[] buffer = new byte[1000];
-                    int bytesReceived = clientSocket.Receive(buffer);
-                    if (bytesReceived > 0)
-                    {
-                        MemoryStream ms = new MemoryStream(buffer);
-                        bFormatter.Binder = new PreMergeToMergedDeserializationBinder();
-                        ChessGameManager.Move move = (ChessGameManager.Move)bFormatter.Deserialize(ms);
+        try
+        {
+            byte[] buffer = new byte[1000];
+            int bytesReceived = clientSocket.Receive(buffer);
+            if (bytesReceived > 0)
+            {
+                MemoryStream ms = new MemoryStream(buffer);
+                bFormatter.Binder = new PreMergeToMergedDeserializationBinder();
+                ChessGameManager.Move move = (ChessGameManager.Move)bFormatter.Deserialize(ms);
 
 
-                        ChessGameManager.Instance.PlayTurn(move);
-                        ChessGameManager.Instance.UpdatePieces();
+                ChessGameManager.Instance.PlayTurn(move);
+                ChessGameManager.Instance.UpdatePieces();
 
-                    }
-                }
-                catch (SocketException s)
-                {
-                    Debug.Log(s);
-                }
-                catch (Exception e)
-                {
-                   ;
-                    Debug.Log(e);
-                }
-                yield return new WaitForSeconds(0.1f);
-      
-        
+            }
+        }
+        catch (Exception) {}
+
+        yield return new WaitForSeconds(0.1f);
     }
 
-    public void StopClient()
+    public void Disconnect()
     {
         if (clientSocket != null && clientSocket.Connected)
         {
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
             clientSocket = null;
-            Debug.Log("Client stopped.");
         }
-    }
-
-    public void Disconnect()
-    {
-        StopClient();
     }
 
     private void OnDestroy()

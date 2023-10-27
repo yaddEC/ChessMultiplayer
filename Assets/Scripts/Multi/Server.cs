@@ -15,22 +15,17 @@ using System.Collections;
 public class Server : MonoBehaviour
 {
     [SerializeField]
-    LobbyManager lobbyManager;
-    bool isLaunched = false;
-    bool foundClient = false;
-    bool moveReceived = false;
-    bool isRecieving = false;
+    LobbyManager    lobbyManager;
     BinaryFormatter bFormatter = new BinaryFormatter();
-    IPAddress serverAddress;
-    Socket serverSocket;
-    Socket clientSocket;
+    IPAddress       serverAddress;
+    Socket          serverSocket;
+    Socket          clientSocket;
+
+    private bool isLaunched = false;
+    private bool foundClient = false;
+
     public event Action OnClientDisconnected;
     public int serverPort;
-
-    private void Start()
-    {
-
-    }
 
     public void LaunchServer()
     {
@@ -40,7 +35,6 @@ public class Server : MonoBehaviour
         serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         serverSocket.Bind(new IPEndPoint(serverAddress, serverPort));
         serverSocket.Listen(5);
-        Debug.Log("Server is listening for connections");
         serverSocket.Blocking = false;
         isLaunched = true;
         StartCoroutine(FetchNewClient());
@@ -66,9 +60,9 @@ public class Server : MonoBehaviour
         {
             return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
         }
-        catch (Exception e) 
+        catch (Exception) 
         { 
-            return false;   
+            return false;
         }
     }
 
@@ -77,34 +71,27 @@ public class Server : MonoBehaviour
     {
         while(!foundClient)
         { 
-        try
-        {
-            clientSocket = serverSocket.Accept();
-            clientSocket.Blocking = false;
-            Debug.Log("Client connected!");
-            foundClient = true;
+            try
+            {
+                clientSocket = serverSocket.Accept();
+                clientSocket.Blocking = false;
+                foundClient = true;
 
-            StartCoroutine(MonitorClientConnection());
+                StartCoroutine(MonitorClientConnection());
 
-        }
-        catch (SocketException e)
-        {
-            Debug.Log(e);
-        }
+            }
+            catch (Exception) {}
 
-        try
-        {
-            //sending the team of the host
-            byte[] buffer = new byte[1000];
-            Stream stream = new MemoryStream(buffer);
-            bFormatter.Serialize(stream, ChessGameManager.Instance.playerTeam);
-            clientSocket.Send(buffer, buffer.Length, 0);
-        }
-        catch (Exception e)
-        {
-            Debug.Log(e);
-        }
-        yield return new WaitForSeconds(0.1f);
+            try
+            {
+                byte[] buffer = new byte[1000];
+                Stream stream = new MemoryStream(buffer);
+                bFormatter.Serialize(stream, ChessGameManager.Instance.playerTeam);
+                clientSocket.Send(buffer, buffer.Length, 0);
+            }
+            catch (Exception) {}
+
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -120,47 +107,37 @@ public class Server : MonoBehaviour
     {
         try
         {
-            moveReceived = false;
-            isRecieving = false;
             byte[] buffer = new byte[1000];
             Stream stream = new MemoryStream(buffer);
             bFormatter.Serialize(stream, move);
             clientSocket.Send(buffer, buffer.Length, 0);
         }
-        catch (Exception e)
-        {
-            Debug.Log(e);
-        }
+        catch (Exception) {}
     }
 
     public IEnumerator ReceivedMove()
     {
-       
-
-            try
+        try
+        {
+            byte[] buffer = new byte[1000];
+            int bytesReceived = clientSocket.Receive(buffer);
+            if (bytesReceived > 0)
             {
-                byte[] buffer = new byte[1000];
-                int bytesReceived = clientSocket.Receive(buffer);
-                if (bytesReceived > 0)
-                {
-                    MemoryStream ms = new MemoryStream(buffer);
-                    bFormatter.Binder = new PreMergeToMergedDeserializationBinder();
-                    ChessGameManager.Move move = (ChessGameManager.Move)bFormatter.Deserialize(ms);
+                MemoryStream ms = new MemoryStream(buffer);
+                bFormatter.Binder = new PreMergeToMergedDeserializationBinder();
+                ChessGameManager.Move move = (ChessGameManager.Move)bFormatter.Deserialize(ms);
 
-                    ChessGameManager.Instance.PlayTurn(move);
-                    ChessGameManager.Instance.UpdatePieces();
+                ChessGameManager.Instance.PlayTurn(move);
+                ChessGameManager.Instance.UpdatePieces();
 
 
-                    }
-                }
-            catch (Exception e)
-            {
-                    Debug.Log(e);
             }
-            yield return new WaitForSeconds(0.1f);
-            
-        
+        }
+        catch (Exception) {}
+
+        yield return new WaitForSeconds(0.1f);
     }
+
     public void StopServer()
     {
         if (isLaunched)
@@ -169,17 +146,17 @@ public class Server : MonoBehaviour
 
             if (clientSocket != null)
             {
+                clientSocket.Shutdown(SocketShutdown.Both);
                 clientSocket.Close();
                 clientSocket = null;
             }
 
             if (serverSocket != null)
             {
+                serverSocket.Shutdown(SocketShutdown.Both);
                 serverSocket.Close();
                 serverSocket = null;
             }
-
-            Debug.Log("Server stopped.");
         }
     }
 

@@ -1,11 +1,5 @@
 ﻿using UnityEngine;
 
-/*
- * This class holds chess piece gameObjects for a team
- * Instantiated for each team by the ChessGameMgr
- * It can hide or set a piece at a given position
- */
-
 public partial class ChessGameManager
 {
     public class TeamPieces
@@ -23,7 +17,6 @@ public partial class ChessGameManager
             pieceTypeArray[(uint)EPieceType.Rook] = new GameObject[2];
         }
 
-        // Add a piece during gameplay - used for pawn promotion
         public void AddPiece(EPieceType type)
         {
             GameObject[] pieces = new GameObject[pieceTypeArray[(uint)type].Length + 1];

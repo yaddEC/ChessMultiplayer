@@ -1,11 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-/*
- * This class computes AI move decision
- * ComputeMove method is called from ChessGameMananger during AI update turn
- */
-
 public class ChessAI : MonoBehaviour
 {
     #region Singleton
@@ -25,8 +20,6 @@ public class ChessAI : MonoBehaviour
 
     public ChessGameManager.Move ComputeMove()
     {
-        // random AI move
-
         ChessGameManager.Move move;
         move.from = 0;
         move.to = 1;

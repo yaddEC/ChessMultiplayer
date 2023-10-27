@@ -1,13 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-/*
- * The BoardState class stores the internal data values of the board
- * It holds a list of BoardSquare structs that contains info for each square : the type of piece (pawn, king, ... , none) and the team of the piece
- * It also contains methods to get valid moves for each type of piece accoring to the current board configuration
- * It can apply a selected move for a piece and eventually reset its values to default
- */
-
 public partial class ChessGameManager
 {
     public struct BoardPos
@@ -270,7 +263,6 @@ public partial class ChessGameManager
             return validMoves.Contains(move);
         }
 
-        // returns move result if a special move occured (pawn promotion, castling...)
         public EMoveResult PlayUnsafeMove(Move move)
         {
             squares[move.to] = squares[move.from];
@@ -282,12 +274,10 @@ public partial class ChessGameManager
 
             if (CanPromotePawn(move))
             {
-                // promote pawn to queen
                 BoardSquare destSquare = squares[move.to];
                 SetPieceAtSquare(move.to, destSquare.team, EPieceType.Queen);
                 return EMoveResult.Promotion;
             }
-            // Castling move
             return ComputeCastling(move);
         }
 
@@ -303,7 +293,6 @@ public partial class ChessGameManager
             return false;
         }
 
-        // compute castling move if applicable
         private EMoveResult ComputeCastling(Move move)
         {
             BoardSquare destSquare = squares[move.to];
@@ -312,19 +301,16 @@ public partial class ChessGameManager
              || (destSquare.team == EChessTeam.Black && isBlackCastlingDone))
                 return EMoveResult.Normal;
 
-            // rook piece
             if (destSquare.piece == EPieceType.Rook)
             {
-                // short castling case
-                if ((destSquare.team == EChessTeam.White && move.from == (BOARD_SIZE - 1) && move.to == 5) // white line
-                 || (destSquare.team == EChessTeam.Black && move.from == (squares.Count - 1) && move.to == squares.Count - 3)) // black line
+                if ((destSquare.team == EChessTeam.White && move.from == (BOARD_SIZE - 1) && move.to == 5)
+                 || (destSquare.team == EChessTeam.Black && move.from == (squares.Count - 1) && move.to == squares.Count - 3)) 
                 {
                     if (TryExecuteCastling(move.to, true))
                         return EMoveResult.Castling_Short;
                 }
-                // long castling case
-                if ((destSquare.team == EChessTeam.White && move.from == 0 && move.to == 3) // white line
-                || (destSquare.team == EChessTeam.Black && move.from == (squares.Count - 8) && move.to == squares.Count - 5)) // black line
+                if ((destSquare.team == EChessTeam.White && move.from == 0 && move.to == 3)
+                || (destSquare.team == EChessTeam.Black && move.from == (squares.Count - 8) && move.to == squares.Count - 5))
                 {
                     if (TryExecuteCastling(move.to, false))
                         return EMoveResult.Castling_Long;
@@ -342,8 +328,8 @@ public partial class ChessGameManager
             BoardSquare kingSquare = squares[kingSquareIndex];
             if (kingSquare.piece == EPieceType.King && kingSquare.team == destSquare.team)
             {
-                BoardSquare tempSquare = kingSquare; // king square to be moved
-                squares[kingSquareIndex] = BoardSquare.Empty(); // replace by empty square
+                BoardSquare tempSquare = kingSquare;
+                squares[kingSquareIndex] = BoardSquare.Empty();
                 squares[kingFinalSquareIndex] = tempSquare;
 
                 if (destSquare.team == EChessTeam.White)
@@ -357,7 +343,6 @@ public partial class ChessGameManager
             return false;
         }
 
-        // approximation : opponent king must be "eaten" to win instead of detecting checkmate state
         public bool DoesTeamLose(EChessTeam team)
         {
             for (int i = 0; i < squares.Count; ++i)
@@ -389,7 +374,6 @@ public partial class ChessGameManager
             {
                 squares = new List<BoardSquare>();
 
-                // init squares
                 for (int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++)
                 {
                     BoardSquare square = new BoardSquare();
@@ -406,7 +390,6 @@ public partial class ChessGameManager
                 }
             }
 
-             // White
             for (int i = BOARD_SIZE; i < BOARD_SIZE*2; ++i)
             {
                 SetPieceAtSquare(i, EChessTeam.White, EPieceType.Pawn);
@@ -420,7 +403,6 @@ public partial class ChessGameManager
             SetPieceAtSquare(6, EChessTeam.White, EPieceType.Knight);
             SetPieceAtSquare(7, EChessTeam.White, EPieceType.Rook);
 
-            // Black
             for (int i = BOARD_SIZE * (BOARD_SIZE - 2) ; i < BOARD_SIZE * (BOARD_SIZE - 1); ++i)
             {
                 SetPieceAtSquare(i, EChessTeam.Black, EPieceType.Pawn);

@@ -1,10 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-/*
- * Simple GUI display : scores and team turn
- */
-
 public class GUIManager : MonoBehaviour
 {
 
@@ -23,10 +19,9 @@ public class GUIManager : MonoBehaviour
 
     Transform whiteToMoveTr = null;
     Transform blackToMoveTr = null;
-    Text whiteScoreText = null;
-    Text blackScoreText = null;
+    Text      whiteScoreText = null;
+    Text      blackScoreText = null;
 
-    // Use this for initialization
     void Awake()
     {
         whiteToMoveTr = transform.Find("PlayerTurnText");

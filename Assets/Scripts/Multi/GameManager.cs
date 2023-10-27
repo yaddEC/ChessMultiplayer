@@ -7,13 +7,11 @@ public class GameManager : MonoBehaviour
 {
     public bool IsHoster;
 
-    [SerializeField]
-    public Server server;
-
-    [SerializeField]
-    public Client client;
+    [SerializeField] public Server server;
+    [SerializeField] public Client client;
 
     static GameManager instance = null;
+
     public static GameManager Instance
     {
         get

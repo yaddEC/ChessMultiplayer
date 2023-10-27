@@ -1,17 +1,10 @@
 ﻿using UnityEngine;
 
-/*
- * Simple static camera
- */
-
 public class CameraLookAt : MonoBehaviour
 {
-    [SerializeField]
-    private Transform lookAt = null;
-    [SerializeField]
-    private float lookAtZ = 0.5f;
-    [SerializeField]
-    private float height = 32f;
+    [SerializeField] private Transform lookAt = null;
+    [SerializeField] private float     lookAtZ = 0.5f;
+    [SerializeField] private float     height = 32f;
 
 	void Update ()
     {

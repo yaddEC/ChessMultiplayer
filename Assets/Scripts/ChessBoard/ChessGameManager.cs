@@ -1,17 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
-using System.IO;
 using System;
-using static ChessGameManager;
-
-/*
- * This singleton manages the whole chess game
- *  - board data (see BoardState class)
- *  - piece models instantiation
- *  - player interactions (piece grab, drag and release)
- *  - AI update calls (see UpdateAITurn and ChessAI class)
- */
 
 public partial class ChessGameManager : MonoBehaviour
 {
@@ -31,11 +20,11 @@ public partial class ChessGameManager : MonoBehaviour
     [SerializeField]
     private bool isAIEnabled = true;
 
-    private ChessAI chessAI = null;
-    private Transform boardTransform = null;
+    private ChessAI    chessAI = null;
+    private Transform  boardTransform = null;
     private static int BOARD_SIZE = 8;
-    private int pieceLayerMask;
-    private int boardLayerMask;
+    private int        pieceLayerMask;
+    private int        boardLayerMask;
 
     #region Enums
     public enum EPieceType : uint
@@ -200,22 +189,18 @@ public partial class ChessGameManager : MonoBehaviour
             BoardState.EMoveResult result = boardState.PlayUnsafeMove(move);
             if (result == BoardState.EMoveResult.Promotion)
             {
-                // instantiate promoted queen gameobject
                 AddQueenAtPos(move.to);
             }
                 EChessTeam otherTeam = (teamTurn == EChessTeam.White) ? EChessTeam.Black : EChessTeam.White;
 
             if (boardState.DoesTeamLose(otherTeam))
             {
-                // increase score and reset board
                 scores[(int)teamTurn]++;
                 if (OnScoreUpdated != null)
                     OnScoreUpdated(scores[0], scores[1]);
                     SendGameInfo(move);
                 PrepareGame(false);
                 
-
-                // remove extra piece instances if pawn promotions occured
                 teamPiecesArray[0].ClearPromotedPieces();
                 teamPiecesArray[1].ClearPromotedPieces();
 
@@ -229,7 +214,6 @@ public partial class ChessGameManager : MonoBehaviour
                     SendGameInfo(move);
 
             }
-            // raise event
             if (OnPlayerTurn != null)
                 OnPlayerTurn(IsPlayerTurn());
 
@@ -238,7 +222,6 @@ public partial class ChessGameManager : MonoBehaviour
         }
     }
 
-    // used to instantiate newly promoted queen
     private void AddQueenAtPos(int pos)
     {
         teamPiecesArray[(int)teamTurn].AddPiece(EPieceType.Queen);
@@ -379,7 +362,6 @@ public partial class ChessGameManager : MonoBehaviour
 
     void CreatePieces()
     {
-        // Instantiate all pieces according to board data
         if (teamPiecesArray[0] == null)
             teamPiecesArray[0] = new TeamPieces();
         if (teamPiecesArray[1] == null)
@@ -395,7 +377,6 @@ public partial class ChessGameManager : MonoBehaviour
                 GameObject crtPiece = Instantiate(crtTeamPrefabs[(uint)square.piece]);
                 teamPiecesArray[(int)square.team].StorePiece(crtPiece, square.piece);
 
-                // set position
                 Vector3 piecePos = boardTransform.position;
                 piecePos.y += zOffset;
                 piecePos.x = -widthOffset + crtPos % BOARD_SIZE;
@@ -460,7 +441,6 @@ public partial class ChessGameManager : MonoBehaviour
         }
         else if (grabbed != null)
         {
-            // find matching square when releasing grabbed piece
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, maxDistance, boardLayerMask))
@@ -489,7 +469,6 @@ public partial class ChessGameManager : MonoBehaviour
 
     void ComputeDrag()
     {
-        // drag grabbed piece on board
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, maxDistance, boardLayerMask))
@@ -500,7 +479,6 @@ public partial class ChessGameManager : MonoBehaviour
 
     void ComputeGrab()
     {
-        // grab a new chess piece from board
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit, maxDistance, pieceLayerMask))
